@@ -26,6 +26,7 @@ class MVCCEditor:
         self.filename = filename
         self.transaction_counter = 0
         self.data = defaultdict(lambda: None)
+        self.records = defaultdict(lambda: None)
         self.transactions = {}
         self.context = context
 
@@ -100,3 +101,6 @@ class MVCCEditor:
             return self.transactions[transaction_id]['changes'][key]
         else:
             return self.data.get(key, None)
+    def getAll(self, transaction_id=None):
+        print("This is the entire snapshot")
+        return self.data

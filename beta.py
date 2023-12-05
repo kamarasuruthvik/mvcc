@@ -22,7 +22,7 @@ def client(client_id):
         transaction_id = None
 
         while True:
-            action = input(f"Client {client_id}: Enter action (read, write, rollback, exit): ")
+            action = input(f"Client {client_id}: Enter action (read, write, rollback, exit, snapshot, commit): ")
 
             if action == "exit":
                 break
@@ -45,16 +45,34 @@ def client(client_id):
                 result = socket.recv_json()
 
                 if result["success"]:
-                    transaction_id = None  # Reset transaction after successful write
+                    transaction_id = result["transaction_id"]  #Set Transaction Id
 
                 print(f"Client {client_id}: Write - Value: {value} - Result: {result}")
 
+            elif action == "commit":
+                key = client_key
+                print(f"This is the transaction id before the commit {transaction_id}")
+                socket.send_json({"operation": action, "key": key, "transaction_id": transaction_id})
+                result = socket.recv_json()
+
+                if result["success"]:
+                    transaction_id = result["transaction_id"]  #Set Transaction Id
+
+                print(f"Client {client_id}: Write - Value: {value} - Result: {result}")
+            
             elif action == "rollback":
                 socket.send_json({"operation": "rollback"})
                 result = socket.recv_json()
                 transaction_id = None  # Reset transaction after rollback
                 print(f"Client {client_id}: Rollback - Result: {result}")
-
+            
+            elif action == "snapshot":
+                socket.send_json({"operation": action, "key": key, "transaction_id": transaction_id})
+                result = socket.recv_json()
+                print(f"Client {client_id}: Snapshot is successfully returned : {result}")
+            
+            
+            
     except KeyboardInterrupt:
         print(f"Client {client_id}: Terminating...")
 

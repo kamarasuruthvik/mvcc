@@ -26,8 +26,8 @@ def server(editor, context):
 
             try:
                 editor.set(key, value, transaction_id)
-                editor.commit(transaction_id)
-                socket.send_json({"success": True, "message": "Committed"})
+                # editor.commit(transaction_id)
+                socket.send_json({"success": True, "message": "State is updated", "transaction_id": transaction_id})
 
             except Exception as e:
                 editor.rollback(transaction_id)
@@ -35,7 +35,23 @@ def server(editor, context):
 
         elif message["operation"] == "rollback":
             socket.send_json({"success": True, "message": "Rolled back"})
-
+        
+        elif message["operation"] == "snapshot":
+            key = message["key"]
+            result = editor.getAll()
+            socket.send_json(result)
+            
+        elif message["operation"] == "commit":
+            key = message["key"]
+            transaction_id = message["transaction_id"]
+            
+            try:
+                transaction_id = editor.commit(transaction_id)
+                socket.send_json({"success": True, "message": "Committed", "transaction_id": transaction_id})
+            except Exception as e:
+                editor.rollback(transaction_id)
+                socket.send_json({"success": False, "message": f"Error: {e}"})
+                
 if __name__ == "__main__":
     filename = "mvcc.pkl"
     context = zmq.Context()

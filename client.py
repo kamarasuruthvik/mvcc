@@ -3,7 +3,6 @@ import threading
 import uuid
 import time
 
-from mvcc_editor import MVCCEditor
 
 '''
 handles communication between client and editor
